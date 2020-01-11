@@ -1,5 +1,7 @@
 package priority
 
+type link chan interface{}
+
 type PriorityQueue struct {
 	main      <-chan interface{}
 	ins       map[int]chan<- interface{}
@@ -62,14 +64,15 @@ func (pq *PriorityQueue) Read() <-chan interface{} {
 
 func generate(blocking bool) (in chan<- interface{}, out <-chan interface{}, closer func()) {
 	if blocking {
-		c := make(chan interface{})
-		in = c
-		out = c
+		in, out = newChan()
 	} else {
-		inf := newInf()
-		in = inf.in()
-		out = inf.out()
+		in, out = newInf()
 	}
 	closer = func() { close(in) }
 	return
+}
+
+func newChan() (chan<- interface{}, <-chan interface{}) {
+	c := make(chan interface{})
+	return c, c
 }

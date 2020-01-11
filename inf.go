@@ -10,22 +10,14 @@ type inf struct {
 	q      *qq.Queue
 }
 
-func newInf() *inf {
+func newInf() (chan<- interface{}, <-chan interface{}) {
 	i := &inf{
 		input:  make(chan interface{}),
 		output: make(chan interface{}),
 		q:      qq.New(),
 	}
 	go i.start()
-	return i
-}
-
-func (i *inf) in() chan<- interface{} {
-	return i.input
-}
-
-func (i *inf) out() <-chan interface{} {
-	return i.output
+	return i.input, i.output
 }
 
 func (i *inf) start() {
