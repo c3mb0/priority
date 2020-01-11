@@ -1,7 +1,5 @@
 package priority
 
-type link chan interface{}
-
 type PriorityQueue struct {
 	main      <-chan interface{}
 	ins       map[int]chan<- interface{}
