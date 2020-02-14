@@ -1,10 +1,16 @@
 package priority
 
 type PriorityQueue struct {
-	main      <-chan interface{}
-	ins       map[int]chan<- interface{}
-	defaultIn chan<- interface{}
+	lowest, highest int
+	main            <-chan interface{}
+	ins             map[int]chan<- interface{}
 }
+
+const (
+	_ = -iota
+	Lowest
+	Highest
+)
 
 func NewPriorityQueue(numQueues int, ascendingPriority, blocking bool) *PriorityQueue {
 	main := make(chan interface{})
@@ -35,23 +41,31 @@ func NewPriorityQueue(numQueues int, ascendingPriority, blocking bool) *Priority
 	}
 	if ascendingPriority {
 		queues[0].start(nil)
-		pq.defaultIn = pq.ins[0]
+		pq.lowest = 0
+		pq.highest = lastIndex
 	} else {
 		queues[lastIndex].start(nil)
-		pq.defaultIn = pq.ins[lastIndex]
+		pq.lowest = lastIndex
+		pq.highest = 0
 	}
 	queues = nil
 	return pq
 }
 
 func (pq *PriorityQueue) Close() {
-	close(pq.defaultIn)
+	close(pq.ins[pq.lowest])
 }
 
 func (pq *PriorityQueue) Write(priority int) chan<- interface{} {
+	switch priority {
+	case Lowest:
+		priority = pq.lowest
+	case Highest:
+		priority = pq.highest
+	}
 	in, ok := pq.ins[priority]
 	if !ok {
-		in = pq.defaultIn
+		in = pq.ins[pq.lowest]
 	}
 	return in
 }
