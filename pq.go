@@ -70,8 +70,13 @@ func (pq *PriorityQueue) Write(priority int) chan<- interface{} {
 	return in
 }
 
-func (pq *PriorityQueue) Read() <-chan interface{} {
+func (pq *PriorityQueue) ReadChan() <-chan interface{} {
 	return pq.main
+}
+
+func (pq *PriorityQueue) ReadValue() (interface{}, bool) {
+	val, ok := <-pq.main
+	return val, ok
 }
 
 func generate(blocking bool) (in chan<- interface{}, out <-chan interface{}, closer func()) {
