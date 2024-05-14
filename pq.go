@@ -1,14 +1,9 @@
 package priority
 
-import (
-	"sync/atomic"
-)
-
 type PriorityQueue struct {
 	lowest, highest int
 	main            <-chan interface{}
 	ins             map[int]chan<- interface{}
-	closed          atomic.Bool
 }
 
 const (
@@ -58,7 +53,6 @@ func NewPriorityQueue(numQueues int, ascendingPriority, blocking bool) *Priority
 }
 
 func (pq *PriorityQueue) Close() {
-	pq.closed.Store(true)
 	close(pq.ins[pq.lowest])
 }
 
@@ -74,14 +68,6 @@ func (pq *PriorityQueue) Write(priority int) chan<- interface{} {
 		in = pq.ins[pq.lowest]
 	}
 	return in
-}
-
-func (pq *PriorityQueue) WriteValue(priority int, msg interface{}) bool {
-	if pq.closed.Load() {
-		return false
-	}
-	pq.Write(priority) <- msg
-	return true
 }
 
 func (pq *PriorityQueue) ReadChan() <-chan interface{} {
