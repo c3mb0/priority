@@ -1,8 +1,6 @@
 package priority
 
-import (
-	"sync"
-)
+import "sync"
 
 type PriorityQueue struct {
 	lowest, highest int
